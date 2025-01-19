@@ -29,17 +29,19 @@ disk_load:
 
 disk_error:
     mov bx, DISK_ERROR
-    call print
+    call bios_print
     mov dh, ah ; ah = error code, dl = disk drive that dropped the error
-    call print_hex ; check out the code at http://stanislavs.org/helppc/int_13-1.html
+    call bios_print_hex ; check out the code at http://stanislavs.org/helppc/int_13-1.html
+    call bios_print_nl
     jmp disk_loop
 
 sectors_error:
     mov bx, SECTORS_ERROR
-    call print
+    call bios_print
+    call bios_print_nl
 
 disk_loop:
     jmp $
 
-DISK_ERROR: db "Disk read error", 13, 10, 0
-SECTORS_ERROR: db "Incorrect number of sectors read", 13, 10, 0
+DISK_ERROR: db "Disk read error ", 0
+SECTORS_ERROR: db "Incorrect number of sectors read", 0

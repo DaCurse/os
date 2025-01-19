@@ -17,10 +17,10 @@ os.bin:	bootloader/boot.bin kernel.bin
 	cat $^ > $@
 
 
-.PHONY: run clean
+.PHONY: all run clean
 run: os.bin
 	qemu-system-i386 -fda os.bin
 
 clean:
-	rm *.bin
-	rm bootloader/*.o
+	rm *.bin bootloader/*.bin || true
+	rm bootloader/*.o || true

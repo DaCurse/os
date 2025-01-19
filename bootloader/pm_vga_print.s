@@ -2,25 +2,25 @@
 
 ; this is how constants are defined
 VIDEO_MEMORY equ 0xb8000
-WHITE_OB_BLACK equ 0x0f ; the color byte for each character
+WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
-print_string_pm:
+pm_vga_print:
     pusha
     mov edx, VIDEO_MEMORY
 
-print_string_pm_loop:
+pm_vga_print_loop:
     mov al, [ebx] ; [ebx] is the address of our character
-    mov ah, WHITE_OB_BLACK
+    mov ah, WHITE_ON_BLACK
 
     cmp al, 0 ; check if end of string
-    je print_string_pm_done
+    je pm_vga_print_done
 
     mov [edx], ax ; store character + attribute in video memory
     add ebx, 1 ; next char
     add edx, 2 ; next video memory position
 
-    jmp print_string_pm_loop
+    jmp pm_vga_print_loop
 
-print_string_pm_done:
+pm_vga_print_done:
     popa
     ret
