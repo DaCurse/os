@@ -5,10 +5,10 @@ bios_print:
 ; while (string[i] != 0) { print string[i]; i++ }
 
 ; the comparison for string end (null byte)
-start:
+.start:
     mov al, [bx] ; 'bx' is the base address for the string
     cmp al, 0 
-    je done
+    je .done
 
     ; the part where we print with the BIOS help
     mov ah, 0x0e
@@ -16,9 +16,9 @@ start:
 
     ; increment pointer and do next loop
     add bx, 1
-    jmp start
+    jmp .start
 
-done:
+.done:
     popa
     ret
 
@@ -33,19 +33,19 @@ bios_print_hex:
 ; Numeric ASCII values: '0' (ASCII 0x30) to '9' (0x39), so just add 0x30 to byte N.
 ; For alphabetic characters A-F: 'A' (ASCII 0x41) to 'F' (0x46) we'll add 0x40
 ; Then, move the ASCII byte to the correct position on the resulting string
-hex_loop:
+.hex_loop:
     cmp cx, 4 ; loop 4 times
-    je end
+    je .end
     
     ; 1. convert last char of 'dx' to ascii
     mov ax, dx ; we will use 'ax' as our working register
     and ax, 0x000f ; 0x1234 -> 0x0004 by masking first three to zeros
     add al, 0x30 ; add 0x30 to N to convert it to ASCII "N"
     cmp al, 0x39 ; if > 9, add extra 8 to represent 'A' to 'F'
-    jle step2
+    jle .step2
     add al, 7 ; 'A' is ASCII 65 instead of 58, so 65-58=7
 
-step2:
+.step2:
     ; 2. get the correct position of the string to place our ASCII char
     ; bx <- base address + string length - index of char
     mov bx, HEX_OUT + 5 ; base + length
@@ -55,9 +55,9 @@ step2:
 
     ; increment index and loop
     add cx, 1
-    jmp hex_loop
+    jmp .hex_loop
 
-end:
+.end:
     ; prepare the parameter and call the function
     ; remember that print receives parameters in 'bx'
     mov bx, HEX_OUT
