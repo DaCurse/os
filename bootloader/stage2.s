@@ -8,9 +8,6 @@ KERNEL_START_SECTOR equ \
 KERNEL_SECTORS equ KERNEL_SIZE / 512               ; Number of sectors for kernel
 
 main_stage2:
-    xor ax, ax
-    mov ds, ax              ; Set data segment to 0x0000
-
     mov bx, MSG_STAGE2
     call bios_print
     call bios_print_nl
@@ -54,15 +51,14 @@ LONG_MODE:
     mov ss, ax
 
     call vga_clear
-    mov rdi, MSG_STAGE2
-    
-    jmp KERNEL_OFFSET
+
+    ; jmp KERNEL_OFFSET
 
     jmp $
 
-BOOT_DRIVE db 0
-MSG_STAGE2 db "Entering long mode...", 0
-MSG_NO_LONG_MODE db "Long mode not supported", 0
+BOOT_DRIVE          db 0x80 ; HDD1
+MSG_STAGE2          db "Entering long mode...", 0
+MSG_NO_LONG_MODE    db "Long mode not supported", 0
 
 ; Pad the code to ensure the kernel appears right after the 2nd stage
 times (KERNEL_OFFSET - KERNEL_SIZE) - ($ - $$) db 0

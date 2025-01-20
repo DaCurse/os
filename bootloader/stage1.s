@@ -7,12 +7,14 @@ STAGE2_SECTORS equ STAGE2_OFFSET / 512      ; Number of sectors for Stage 2
 main:
     jmp 0x0000:.flush_cs
 .flush_cs:
+    cli
     xor ax, ax
 
     ; Set up segment registers.
     mov ss, ax
     ; Set up stack so that it starts below Main.
     mov sp, main
+    sti
     
     mov ds, ax
     mov es, ax
