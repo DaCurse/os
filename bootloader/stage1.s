@@ -1,5 +1,5 @@
 [org 0x7c00]
-BITS 16
+[bits 16]
 
 STAGE2_OFFSET equ 0x1000                    ; Address to load Stage 2 bootloader
 STAGE2_SECTORS equ STAGE2_OFFSET / 512      ; Number of sectors for Stage 2

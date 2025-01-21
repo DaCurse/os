@@ -3,9 +3,12 @@
 VIDEO_MEMORY equ 0xb8000
 WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
+; Params:
+;   rdi => address to the string
+; Returns:
+;   nothing
 vga_print:
-    push rbx                ; Save rbx (pointer to the string)
-    push rsi                ; Save rsi (for any other registers that may be used)
+    push rsi                ; Save rsi
     push rdi                ; Save rdi (the address of the string)
 
     mov rsi, VIDEO_MEMORY   ; rsi now points to the starting address of video memory
@@ -26,13 +29,16 @@ vga_print:
 .done:
     pop rdi                 ; Restore rdi
     pop rsi                 ; Restore rsi
-    pop rbx                 ; Restore rbx
     ret                     ; Return from the subroutine
 
+; Params:
+;   nothing
+; Returns:
+;   nothing
 vga_clear:
     ; Set the base address for video memory
     mov edi, VIDEO_MEMORY       ; Video memory starting address
-    mov rcx, 500                ; Screen has 2000 characters, each 2 bytes (character + attribute)
+    mov rcx, 500                ; Screen has 80 * 25 = 2000 characters, each 2 bytes (character + attribute)
     
     ; Set the value to white foreground on black background
     mov rax, 0x0F20

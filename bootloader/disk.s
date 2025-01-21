@@ -1,46 +1,54 @@
-; load 'dh' sectors from drive 'dl' into ES:BX
-; starting sector is taken from 'cl'
-disk_load:
-    pusha
-    ; reading from disk requires setting specific values in all registers
-    ; so we will overwrite our input parameters from 'dx'. Let's save it
-    ; to the stack for later use.
-    push dx
-
-    mov ah, 0x02 ; ah <- int 0x13 function. 0x02 = 'read'
-    mov al, dh   ; al <- number of sectors to read (0x01 .. 0x80)
-    mov ch, 0x00 ; ch <- cylinder (0x0 .. 0x3FF, upper 2 bits in 'cl')
-    ; dl <- drive number. Our caller sets it as a parameter and gets it from BIOS
-    ; (0 = floppy, 1 = floppy2, 0x80 = hdd, 0x81 = hdd2)
-    mov dh, 0x00 ; dh <- head number (0x0 .. 0xF)
-
-    ; [es:bx] <- pointer to buffer where the data will be stored
-    ; caller sets it up for us, and it is actually the standard location for int 13h
-    int 0x13       ; BIOS interrupt
-    jc .disk_error ; if error (stored in the carry bit)
-
-    pop dx
-    cmp al, dh    ; BIOS also sets 'al' to the # of sectors read. Compare it.
-    jne .sectors_error
-    popa
+; https://wiki.osdev.org/Disk_access_using_the_BIOS_(INT_13h)#LBA_in_Extended_Mode
+; Params:
+;   dl => drive
+; Returns:
+;   halts if unsupported
+check_int13_ext:
+    mov ah, 0x41
+    mov bx, 0x55AA
+    int 0x13
+    jc .ext_unsupported
     ret
 
-
-.disk_error:
-    mov bx, DISK_ERROR
-    call bios_print
-    mov dh, ah ; ah = error code, dl = disk drive that dropped the error
-    call bios_print_hex ; check out the code at http://stanislavs.org/helppc/int_13-1.html
-    call bios_print_nl
-    jmp .disk_loop
-
-.sectors_error:
-    mov bx, SECTORS_ERROR
+.ext_unsupported:
+    mov bx, MSG_EXT_UNSUPPORTED
     call bios_print
     call bios_print_nl
-
-.disk_loop:
     jmp $
 
-DISK_ERROR: db "Disk read error ", 0
-SECTORS_ERROR: db "Incorrect number of sectors read", 0
+; https://wiki.osdev.org/Disk_access_using_the_BIOS_(INT_13h)#LBA_in_Extended_Mode
+; Params:
+;   dl => drive
+;   ecx => starting sector
+;   ax => sectors to read
+;   ebx => address to write to
+; Returns:
+;   halts program if read failed 
+read_disk_lba:
+    mov [LBA_PACKET.block_count], ax
+    mov [LBA_PACKET.lba_value], ecx
+    mov [LBA_PACKET.transfer_buffer], ebx
+    mov si, LBA_PACKET
+
+    mov ah, 0x42
+    int 0x13
+    jc .read_error
+
+    ret
+
+.read_error:
+    mov bx, MSG_READ_ERROR
+    call bios_print
+    call bios_print_nl
+    jmp $
+
+align 4
+LBA_PACKET:
+    .packet_size        db 0x10
+    .reserved           db 0x00
+    .block_count        dw 0x00
+    .transfer_buffer    dd 0x00
+    .lba_value          dq 0x00
+
+MSG_EXT_UNSUPPORTED db "INT 13h extensions unsupported", 0
+MSG_READ_ERROR      db "Failed to read from disk", 0
