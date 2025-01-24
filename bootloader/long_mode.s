@@ -44,6 +44,11 @@ check_cpu:
 %define CODE_SEG     0x0008
 %define DATA_SEG     0x0010
 
+; Function to switch directly to long mode from real mode.
+; Identity maps the first 2MiB.
+; Params:
+;   es:edi => Should point to a valid page-aligned 16KiB buffer, for the PML4, PDPT, PD and a PT.
+;   ss:esp => Should point to memory that can be used as a small (1 uint32_t) stack
 enter_long_mode:
     ; Zero out the 16KiB buffer.
     ; Since we are doing a rep stosd, count should be bytes/4.   

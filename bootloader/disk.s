@@ -4,14 +4,16 @@
 ; Returns:
 ;   halts if unsupported
 check_int13_ext:
+    pusha
     mov ah, 0x41
     mov bx, 0x55AA
     int 0x13
     jc .ext_unsupported
+    popa
     ret
 
 .ext_unsupported:
-    mov bx, MSG_EXT_UNSUPPORTED
+    mov si, MSG_EXT_UNSUPPORTED
     call bios_print
     call bios_print_nl
     jmp $
@@ -25,6 +27,7 @@ check_int13_ext:
 ; Returns:
 ;   halts program if read failed 
 read_disk_lba:
+    pusha
     mov [LBA_PACKET.block_count], ax
     mov [LBA_PACKET.lba_value], ecx
     mov [LBA_PACKET.transfer_buffer], ebx
@@ -34,10 +37,11 @@ read_disk_lba:
     int 0x13
     jc .read_error
 
+    popa
     ret
 
 .read_error:
-    mov bx, MSG_READ_ERROR
+    mov si, MSG_READ_ERROR
     call bios_print
     call bios_print_nl
     jmp $
