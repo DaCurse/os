@@ -104,23 +104,15 @@ main_stage2:
 .standard_entry:
     ; Store si for the current iteration
     push si
-    ; si points to the 8.3 file name, compare
+    ; si points to the 8.3 file name
     lea di, KERNEL_FILE_NAME
     mov cx, FILE_NAME_LENGTH
     ; Print filename for debugging
     call bios_print_n
     call bios_print_nl
-
-.compare_loop:
-    mov al, [si]
-    mov bl, [di]
-    cmp al, bl
+    ; Comapre es:di with ds:si
+    repe cmpsb
     jne .skip_entry
-
-    inc si
-    inc di
-    loop .compare_loop
-
     jmp .kernel_found
 
 .skip_entry:
@@ -204,7 +196,6 @@ LONG_MODE:
     mov gs, ax
     mov ss, ax
 
-    call vga_clear
     jmp TEMP_BLOCK
 
     jmp $
